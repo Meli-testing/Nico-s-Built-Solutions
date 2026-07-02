@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NBS – Nico's Built Solutions | Dakwerken Brussel & Oost-Vlaanderen</title>
+<meta name="description" content="Vakkundige dakwerken in Brussel en Oost-Vlaanderen. Nieuwbouw, renovatie, zinkwerk, isolatie en 24/7 noodinterventie. BTW: BE0803897594">
+<link rel="preconnect" href="https://fonts.bunny.net">
+<link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800,900|barlow-condensed:700,800,900" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--red:#CC0000;--dark:#1a1a1a;--dark2:#252525;--grey:#f4f4f4;--text:#222;--mid:#555;--white:#fff;--display:'Barlow Condensed',sans-serif;--body:'Inter',sans-serif}
+html{scroll-behavior:smooth}
+body{font-family:var(--body);color:var(--text);background:var(--white)}
+
+/* TOPBAR */
+.topbar{background:var(--dark);color:#fff;font-size:12px;font-weight:700;letter-spacing:.04em;padding:10px 40px;display:flex;justify-content:space-between;align-items:center}
+.topbar a{color:#fff;text-decoration:none;font-weight:700}
+.topbar .left{display:flex;gap:24px;align-items:center}
+.topbar .emergency{color:#fff;display:flex;align-items:center;gap:7px}
+.topbar .emergency::before{content:'';width:6px;height:6px;background:var(--red);border-radius:50%;display:inline-block;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* NAVBAR */
+.navbar{background:#fff;padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:72px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.navbar-logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+.logo-text .name{font-family:var(--display);font-size:18px;font-weight:700;color:var(--dark);line-height:1.2}
+.logo-text .sub{font-size:10px;font-weight:700;letter-spacing:.15em;color:#999}
+.nav-links{display:flex;align-items:center;gap:32px;list-style:none}
+.nav-links a{text-decoration:none;color:var(--dark);font-size:14px;font-weight:500;transition:color .2s}
+.nav-links a:hover{color:var(--red)}
+.nav-right{display:flex;align-items:center;gap:14px}
+.lang-sw{display:flex;gap:3px}
+.lang-btn{padding:4px 10px;border:none;background:transparent;font-size:12px;font-weight:700;letter-spacing:.05em;cursor:pointer;color:#777;border-radius:4px;transition:all .2s;font-family:var(--body)}
+.lang-btn.active{background:var(--red);color:#fff}
+.btn-cta{background:var(--red);color:#fff;padding:10px 20px;border-radius:4px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;transition:background .2s}
+.btn-cta:hover{background:#aa0000}
+
+/* HERO */
+.hero{position:relative;min-height:90vh;display:flex;align-items:center;background:url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80') center/cover no-repeat}
+.hero::before{content:'';position:absolute;inset:0;background:linear-gradient(to right,rgba(0,0,0,.88) 50%,rgba(0,0,0,.35) 100%)}
+.hero-inner{position:relative;max-width:700px;padding:80px 40px}
+.eyebrow{display:flex;align-items:center;gap:12px;font-size:11px;font-weight:700;letter-spacing:.15em;color:#bbb;margin-bottom:20px}
+.eyebrow::before{content:'';display:block;width:32px;height:2px;background:var(--red);flex-shrink:0}
+.hero h1{font-family:var(--display);font-size:clamp(42px,6vw,74px);font-weight:700;line-height:1.04;color:#fff;margin-bottom:24px}
+.hero h1 .accent{color:var(--red)}
+.hero p{font-size:16px;line-height:1.75;color:#ccc;max-width:520px;margin-bottom:36px}
+.hero-btn{display:inline-block;background:var(--red);color:#fff;padding:16px 32px;border-radius:4px;font-weight:700;font-size:14px;text-decoration:none;margin-bottom:48px;transition:background .2s}
+.hero-btn:hover{background:#aa0000}
+.hero-checks{display:flex;gap:28px;flex-wrap:wrap}
+.hero-chk{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#ccc}
+.hero-chk::before{content:'✓';color:var(--red);font-weight:900;font-size:15px}
+
+/* STATS BAR */
+.stats-bar{background:var(--red);display:grid;grid-template-columns:repeat(4,1fr)}
+.stat{padding:28px 20px;text-align:center;color:#fff;border-right:1px solid rgba(255,255,255,.2)}
+.stat:last-child{border-right:none}
+.stat-n{font-family:var(--display);font-size:38px;font-weight:700;display:block}
+.stat-l{font-size:10px;font-weight:700;letter-spacing:.12em;opacity:.85;margin-top:4px}
+
+/* SECTIONS */
+.sec{padding:80px 40px;max-width:1280px;margin:0 auto}
+.sec-hdr{margin-bottom:48px}
+.sec-eye{display:flex;align-items:center;gap:10px;font-size:11px;font-weight:700;letter-spacing:.15em;color:var(--red);margin-bottom:14px}
+.sec-eye::before{content:'';width:28px;height:2px;background:var(--red)}
+.sec-ttl{font-family:var(--display);font-size:clamp(28px,3.5vw,44px);font-weight:700;color:var(--dark);line-height:1.1;margin-bottom:16px}
+.sec-sub{font-size:15px;line-height:1.7;color:var(--mid);max-width:600px}
+
+/* SERVICES */
+.svc-bg{background:var(--grey)}
+.svc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.svc-card{background:#fff;border:1px solid #e5e5e5;border-radius:8px;padding:28px;transition:box-shadow .2s}
+.svc-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.08)}
+.svc-num{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;background:rgba(204,0,0,.1);color:var(--red);font-weight:700;font-size:14px;border-radius:6px;margin-bottom:16px}
+.svc-card h3{font-size:17px;font-weight:700;margin-bottom:10px;color:var(--dark)}
+.svc-card p{font-size:14px;line-height:1.65;color:var(--mid)}
+
+/* WHY NBS */
+.why-bg{background:var(--dark2)}
+.why-bg .sec-ttl{color:#fff}
+.why-bg .sec-sub{color:#999}
+.why-bg .sec-eye{color:#e06060}
+.why-bg .sec-eye::before{background:#e06060}
+.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.why-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:28px}
+.why-icon{display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;background:var(--red);color:#fff;font-weight:900;font-size:15px;border-radius:8px;margin-bottom:16px}
+.why-card h3{font-size:17px;font-weight:700;color:#fff;margin-bottom:10px}
+.why-card p{font-size:14px;line-height:1.65;color:#999}
+
+/* ABOUT */
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+.about-img-w{position:relative}
+.about-img-w img{width:100%;height:460px;object-fit:cover;border-radius:8px}
+.about-badge{position:absolute;bottom:24px;right:-20px;background:var(--red);color:#fff;padding:20px 24px;text-align:center;border-radius:4px;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.about-badge .bn{font-family:var(--display);font-size:36px;font-weight:700;display:block}
+.about-badge .bl{font-size:10px;font-weight:700;letter-spacing:.1em}
+.about-content p{font-size:15px;line-height:1.8;color:var(--mid);margin-bottom:16px}
+.about-chks{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;margin:24px 0 32px}
+.about-chk{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600}
+.ck-ico{width:22px;height:22px;background:var(--red);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0}
+.btn-dark{display:inline-block;background:var(--dark);color:#fff;padding:14px 28px;border-radius:4px;font-weight:700;font-size:14px;text-decoration:none;transition:background .2s}
+.btn-dark:hover{background:#333}
+
+/* PROJECTS */
+.prj-bg{background:var(--grey)}
+.prj-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.prj-card{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:4/3;cursor:pointer}
+.prj-card img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.prj-card:hover img{transform:scale(1.05)}
+.prj-ov{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.82) 0%,transparent 55%);display:flex;flex-direction:column;justify-content:flex-end;padding:20px}
+.prj-badge{display:inline-block;background:var(--red);color:#fff;font-size:10px;font-weight:700;letter-spacing:.08em;padding:4px 10px;border-radius:3px;margin-bottom:8px;align-self:flex-start}
+.prj-ttl{font-size:17px;font-weight:700;color:#fff;margin-bottom:4px}
+.prj-loc{font-size:12px;color:rgba(255,255,255,.7)}
+
+/* REVIEWS */
+.rev-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.rev-card{background:var(--grey);border:1px solid #e5e5e5;border-radius:8px;padding:28px}
+.rev-stars{color:#e6a817;font-size:16px;margin-bottom:14px;letter-spacing:2px}
+.rev-txt{font-size:14px;line-height:1.7;color:var(--mid);margin-bottom:20px;font-style:italic}
+.rev-auth{display:flex;align-items:center;gap:12px}
+.rev-av{width:40px;height:40px;background:var(--dark);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.rev-name{font-size:14px;font-weight:700;color:var(--dark)}
+.rev-city{font-size:12px;color:var(--mid)}
+
+/* CONTACT */
+.cnt-bg{background:var(--dark)}
+.cnt-bg .sec-ttl{color:#fff}
+.cnt-bg .sec-sub{color:#aaa}
+.cnt-bg .sec-eye{color:#e06060}
+.cnt-bg .sec-eye::before{background:#e06060}
+.cnt-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start}
+.cnt-items{margin-top:32px;display:flex;flex-direction:column;gap:16px}
+.cnt-item{display:flex;align-items:center;gap:14px}
+.cnt-ico{width:42px;height:42px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.cnt-ico.red{background:var(--red)}
+.cnt-ico.green{background:#25D366}
+.cnt-ico.grey{background:rgba(255,255,255,.1)}
+.cnt-lbl{font-size:10px;font-weight:700;letter-spacing:.1em;color:#777}
+.cnt-val{font-size:15px;font-weight:600;color:#fff;text-decoration:none}
+.cnt-val:hover{color:var(--red)}
+.form-card{background:#fff;border-radius:8px;padding:36px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:0}
+.fg{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.fg label{font-size:10px;font-weight:700;letter-spacing:.1em;color:#888}
+.fg input,.fg textarea{border:1px solid #ddd;border-radius:4px;padding:12px;font-size:14px;font-family:var(--body);outline:none;transition:border-color .2s}
+.fg input:focus,.fg textarea:focus{border-color:var(--red)}
+.fg textarea{resize:vertical;min-height:120px}
+.form-btn{width:100%;background:var(--red);color:#fff;border:none;padding:16px;border-radius:4px;font-size:15px;font-weight:700;cursor:pointer;transition:background .2s;font-family:var(--body)}
+.form-btn:hover{background:#aa0000}
+.form-ok{display:none;text-align:center;color:#25D366;font-weight:600;padding:16px;font-size:14px}
+
+/* MAP */
+.map-wrap{background:var(--dark);padding:0 40px 60px}
+.map-inner{max-width:1280px;margin:0 auto}
+#map{height:300px;border-radius:8px}
+
+/* FOOTER */
+footer{background:#111;padding:60px 40px 28px}
+.ft-grid{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1.5fr;gap:40px;margin-bottom:40px}
+.ft-brand .tagline{font-size:13px;color:#666;line-height:1.6;margin-top:12px;max-width:220px}
+.ft-brand .btw{font-size:11px;color:#555;margin-top:8px}
+.ft-col h4{font-size:11px;font-weight:700;letter-spacing:.12em;color:#777;margin-bottom:16px}
+.ft-col ul{list-style:none;display:flex;flex-direction:column;gap:10px}
+.ft-col ul a{font-size:13px;color:#666;text-decoration:none;transition:color .2s}
+.ft-col ul a:hover{color:#fff}
+.ft-cv{font-size:13px;color:#666;line-height:1.8}
+.ft-cv a{color:#666;text-decoration:none}
+.ft-langs{display:flex;gap:6px;margin-top:14px}
+.ft-lb{padding:5px 12px;border:1px solid #444;background:transparent;color:#666;font-size:11px;font-weight:700;letter-spacing:.05em;border-radius:4px;cursor:pointer;transition:all .2s;font-family:var(--body)}
+.ft-lb.active{border-color:var(--red);color:#fff;background:var(--red)}
+.ft-bot{max-width:1280px;margin:0 auto;border-top:1px solid #222;padding-top:22px;display:flex;justify-content:space-between;align-items:center}
+.ft-bot p{font-size:12px;color:#555}
+.ft-bot a{color:#555;text-decoration:none}
+
+/* WHATSAPP FAB */
+.wa-fab{position:fixed;bottom:28px;right:28px;background:#25D366;color:#fff;border-radius:28px;padding:12px 20px;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;text-decoration:none;box-shadow:0 4px 20px rgba(37,211,102,.4);z-index:999;transition:transform .2s}
+.wa-fab:hover{transform:scale(1.05)}
+.wa-fab svg{width:20px;height:20px;fill:#fff}
+
+/* COOKIE */
+.cookie{position:fixed;bottom:0;left:0;right:0;background:#1a1a1a;color:#ccc;padding:16px 40px;display:flex;align-items:center;justify-content:space-between;gap:20px;z-index:2000;font-size:13px;border-top:2px solid var(--red)}
+.cookie.gone{display:none}
+.ck-btns{display:flex;gap:10px;flex-shrink:0}
+.ck-ok{background:var(--red);color:#fff;border:none;padding:8px 18px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--body)}
+.ck-no{background:transparent;color:#aaa;border:1px solid #555;padding:8px 18px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--body)}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .topbar{padding:8px 20px;font-size:11px}
+  .navbar{padding:0 20px}
+  .nav-links{display:none}
+  .hero-inner{padding:60px 20px}
+  .sec{padding:60px 20px}
+  .stats-bar{grid-template-columns:repeat(2,1fr)}
+  .svc-grid,.why-grid,.prj-grid,.rev-grid{grid-template-columns:1fr 1fr}
+  .about-grid,.cnt-grid{grid-template-columns:1fr}
+  .ft-grid{grid-template-columns:1fr 1fr}
+  .about-badge{right:0}
+  .map-wrap{padding:0 20px 40px}
+  footer{padding:40px 20px 20px}
+  .cookie{padding:16px 20px;flex-wrap:wrap}
+  .form-row{grid-template-columns:1fr}
+}
+@media(max-width:560px){
+  .svc-grid,.why-grid,.prj-grid,.rev-grid{grid-template-columns:1fr}
+  .hero h1{font-size:38px}
+  .stats-bar{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- COOKIE BANNER -->
+<div class="cookie" id="cookieBanner">
+  <span data-k="cookie_text">Wij gebruiken cookies om uw ervaring te verbeteren.</span>
+  <div class="ck-btns">
+    <button class="ck-ok" onclick="okCookie()" data-k="cookie_accept">Accepteren</button>
+    <button class="ck-no" onclick="noCookie()" data-k="cookie_decline">Weigeren</button>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="left">
+    <a href="tel:+32489275172">📞 0489 27 51 72</a>
+    <a href="mailto:nicosbuiltsolutions@gmail.com">nicosbuiltsolutions@gmail.com</a>
+  </div>
+  <div class="emergency" data-k="topbar_emergency">24/7 NOODINTERVENTIE</div>
+</div>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="#" class="navbar-logo">
+    <svg width="46" height="46" viewBox="0 0 60 60" fill="none">
+      <path d="M5 54L30 5L55 54" stroke="#555" stroke-width="5.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+      <path d="M13 54L30 19L47 54" stroke="#777" stroke-width="5" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+      <path d="M22 54L30 35L38 54Z" fill="#CC0000"/>
+    </svg>
+    <div class="logo-text">
+      <div class="name">Nico's Built Solutions</div>
+      <div class="sub">DAKWERKEN</div>
+    </div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#diensten" data-k="nav_diensten">Diensten</a></li>
+    <li><a href="#realisaties" data-k="nav_realisaties">Realisaties</a></li>
+    <li><a href="#reviews" data-k="nav_reviews">Reviews</a></li>
+    <li><a href="#over-ons" data-k="nav_overons">Over ons</a></li>
+    <li><a href="#contact" data-k="nav_contact">Contact</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="lang-sw">
+      <button class="lang-btn active" onclick="setLang('nl')">NL</button>
+      <button class="lang-btn" onclick="setLang('fr')">FR</button>
+      <button class="lang-btn" onclick="setLang('ro')">RO</button>
+    </div>
+    <a href="#contact" class="btn-cta" data-k="nav_cta">Vraag een gratis offerte aan</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow" data-k="hero_eyebrow">DAKWERKEN IN BRUSSEL & OOST-VLAANDEREN</div>
+    <h1>
+      <span data-k="hero_title1">Vakkundig dakwerk,</span><br>
+      <span class="accent" data-k="hero_title2">afgewerkt tot in de puntjes</span>
+    </h1>
+    <p data-k="hero_sub">Van nieuwbouw en renovatie tot zinkwerk, isolatie en noodherstellingen. Meer dan 10 jaar ervaring in Brussel en Oost-Vlaanderen.</p>
+    <a href="#contact" class="hero-btn" data-k="hero_cta">Vraag een gratis offerte aan</a>
+    <div class="hero-checks">
+      <div class="hero-chk" data-k="hero_check1">10+ jaar ervaring</div>
+      <div class="hero-chk" data-k="hero_check2">24/7 noodinterventie</div>
+      <div class="hero-chk" data-k="hero_check3">Gratis offerte</div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat">
+    <span class="stat-n" data-k="stats1_num">10+</span>
+    <div class="stat-l" data-k="stats1_label">JAAR ERVARING</div>
+  </div>
+  <div class="stat">
+    <span class="stat-n" data-k="stats2_num">24/7</span>
+    <div class="stat-l" data-k="stats2_label">NOODINTERVENTIE</div>
+  </div>
+  <div class="stat">
+    <span class="stat-n" data-k="stats3_num">100%</span>
+    <div class="stat-l" data-k="stats3_label">EIGEN VAKMENSEN</div>
+  </div>
+  <div class="stat">
+    <span class="stat-n" data-k="stats4_num">Gratis</span>
+    <div class="stat-l" data-k="stats4_label">VRIJBLIJVENDE OFFERTE</div>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<div class="svc-bg" id="diensten">
+  <div class="sec">
+    <div class="sec-hdr">
+      <div class="sec-eye" data-k="services_eyebrow">ONZE DIENSTEN</div>
+      <h2 class="sec-ttl" data-k="services_title">Alles voor uw dak, onder één dak</h2>
+      <p class="sec-sub" data-k="services_sub">Van eerste steen tot laatste pan — wij verzorgen elk type dakwerk met oog voor detail en duurzaamheid.</p>
+    </div>
+    <div class="svc-grid">
+      <div class="svc-card"><div class="svc-num">01</div><h3 data-k="s1_title">Nieuwbouw</h3><p data-k="s1_desc">Volledige dakopbouw voor nieuwbouwprojecten, op maat en volgens de strengste normen.</p></div>
+      <div class="svc-card"><div class="svc-num">02</div><h3 data-k="s2_title">Renovatie</h3><p data-k="s2_desc">Een tweede leven voor uw dak met moderne materialen en technieken.</p></div>
+      <div class="svc-card"><div class="svc-num">03</div><h3 data-k="s3_title">Reparatie</h3><p data-k="s3_desc">Snelle en duurzame herstelling van lekken, schade en slijtage.</p></div>
+      <div class="svc-card"><div class="svc-num">04</div><h3 data-k="s4_title">Noodinterventie</h3><p data-k="s4_desc">24/7 bereikbaar bij storm- of waterschade. Wij staan paraat.</p></div>
+      <div class="svc-card"><div class="svc-num">05</div><h3 data-k="s5_title">Zinkwerk</h3><p data-k="s5_desc">Vakkundig zink- en koperwerk voor goten, dakranden en afvoer.</p></div>
+      <div class="svc-card"><div class="svc-num">06</div><h3 data-k="s6_title">Isolatie</h3><p data-k="s6_desc">Energiezuinige dakisolatie voor meer comfort en lagere facturen.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- WHY NBS -->
+<div class="why-bg">
+  <div class="sec">
+    <div class="sec-hdr">
+      <div class="sec-eye" data-k="why_eyebrow">WAAROM NBS</div>
+      <h2 class="sec-ttl" data-k="why_title">Waarom kiezen voor Nico's Built Solutions?</h2>
+      <p class="sec-sub" data-k="why_sub">Een betrouwbare partner voor uw dak, van advies tot afwerking.</p>
+    </div>
+    <div class="why-grid">
+      <div class="why-card"><div class="why-icon">10+</div><h3 data-k="why1_title">10+ jaar ervaring</h3><p data-k="why1_desc">Meer dan een decennium vakmanschap op daken in Brussel en Oost-Vlaanderen.</p></div>
+      <div class="why-card"><div class="why-icon">✓</div><h3 data-k="why2_title">Kwaliteitsmaterialen</h3><p data-k="why2_desc">Wij werken uitsluitend met duurzame materialen van topmerken, voor een dak dat blijft.</p></div>
+      <div class="why-card"><div class="why-icon">24/7</div><h3 data-k="why3_title">Snelle noodinterventie</h3><p data-k="why3_desc">Storm- of waterschade? Wij staan 24/7 paraat en zijn snel ter plaatse.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<div id="over-ons">
+  <div class="sec">
+    <div class="about-grid">
+      <div class="about-img-w">
+        <img src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&q=80" alt="NBS dakwerkers aan het werk" loading="lazy">
+        <div class="about-badge">
+          <span class="bn">10+</span>
+          <div class="bl" data-k="about_badge">JAAR ERVARING</div>
+        </div>
+      </div>
+      <div class="about-content">
+        <div class="sec-eye" data-k="about_eyebrow">OVER NBS</div>
+        <h2 class="sec-ttl" data-k="about_title">Gebouwd op ervaring, gedreven door vakmanschap</h2>
+        <p data-k="about_p1">NBS – Nico's Built Solutions is een dakwerkbedrijf actief in Brussel en Oost-Vlaanderen. Met meer dan 10 jaar ervaring kennen we elk dak en elke uitdaging.</p>
+        <p data-k="about_p2">Wij geloven in eerlijk advies, kwaliteitsmaterialen en een nette afwerking. Geen onderaanneming, maar een vast team van vakmensen dat trots is op elk project.</p>
+        <div class="about-chks">
+          <div class="about-chk"><div class="ck-ico">✓</div><span data-k="about_check1">Persoonlijke aanpak</span></div>
+          <div class="about-chk"><div class="ck-ico">✓</div><span data-k="about_check3">Kwaliteitsmaterialen</span></div>
+          <div class="about-chk"><div class="ck-ico">✓</div><span data-k="about_check2">Nette werf & afwerking</span></div>
+          <div class="about-chk"><div class="ck-ico">✓</div><span data-k="about_check4">Heldere communicatie</span></div>
+        </div>
+        <a href="#contact" class="btn-dark" data-k="about_btn">Plan uw project</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROJECTS -->
+<div class="prj-bg" id="realisaties">
+  <div class="sec">
+    <div class="sec-hdr">
+      <div class="sec-eye" data-k="projects_eyebrow">REALISATIES</div>
+      <h2 class="sec-ttl" data-k="projects_title">Onze recente projecten</h2>
+      <p class="sec-sub" data-k="projects_sub">Een greep uit ons werk in Brussel en Oost-Vlaanderen.</p>
+    </div>
+    <div class="prj-grid">
+      <div class="prj-card">
+        <img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&q=80" alt="Villa nieuwbouw Gent" loading="lazy">
+        <div class="prj-ov"><span class="prj-badge">NIEUWBOUW</span><div class="prj-ttl">Villa nieuwbouw</div><div class="prj-loc">Gent</div></div>
+      </div>
+      <div class="prj-card">
+        <img src="https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=600&q=80" alt="Renovatie pannendak Aalst" loading="lazy">
+        <div class="prj-ov"><span class="prj-badge">RENOVATIE</span><div class="prj-ttl">Renovatie pannendak</div><div class="prj-loc">Aalst</div></div>
+      </div>
+      <div class="prj-card">
+        <img src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=600&q=80" alt="Nieuwbouwproject Brussel" loading="lazy">
+        <div class="prj-ov"><span class="prj-badge">NIEUWBOUW</span><div class="prj-ttl">Nieuwbouwproject</div><div class="prj-loc">Brussel</div></div>
+      </div>
+      <div class="prj-card">
+        <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80" alt="Plat dak Erembodegem" loading="lazy">
+        <div class="prj-ov"><span class="prj-badge">PLAT DAK</span><div class="prj-ttl">Plat dak</div><div class="prj-loc">Erembodegem</div></div>
+      </div>
+      <div class="prj-card">
+        <img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&q=80" alt="Dakisolatie Sint-Niklaas" loading="lazy">
+        <div class="prj-ov"><span class="prj-badge">ISOLATIE</span><div class="prj-ttl">Dakisolatie & afwerking</div><div class="prj-loc">Sint-Niklaas</div></div>
+      </div>
+      <div class="prj-card">
+        <img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&q=80" alt="Zinkwerk Brussel" loading="lazy">
+        <div class="prj-ov"><span class="prj-badge">ZINKWERK</span><div class="prj-ttl">Werken op hoogte</div><div class="prj-loc">Brussel</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REVIEWS -->
+<div id="reviews">
+  <div class="sec">
+    <div class="sec-hdr" style="text-align:center">
+      <div class="sec-eye" style="justify-content:center" data-k="reviews_eyebrow">REVIEWS</div>
+      <h2 class="sec-ttl" data-k="reviews_title">Wat onze klanten zeggen</h2>
+      <p class="sec-sub" style="margin:0 auto" data-k="reviews_sub">Tevreden klanten in Brussel en Oost-Vlaanderen.</p>
+    </div>
+    <div class="rev-grid">
+      <div class="rev-card">
+        <div class="rev-stars">★★★★★</div>
+        <p class="rev-txt">"Snel, netjes en correct. Ons dak werd vakkundig gerenoveerd binnen de afgesproken termijn."</p>
+        <div class="rev-auth"><div class="rev-av">FJ</div><div><div class="rev-name">Familie Janssens</div><div class="rev-city">Aalst</div></div></div>
+      </div>
+      <div class="rev-card">
+        <div class="rev-stars">★★★★★</div>
+        <p class="rev-txt">"Na stormschade stond NBS er dezelfde dag. Professioneel en eerlijk advies."</p>
+        <div class="rev-auth"><div class="rev-av">PD</div><div><div class="rev-name">P. Devos</div><div class="rev-city">Gent</div></div></div>
+      </div>
+      <div class="rev-card">
+        <div class="rev-stars">★★★★★</div>
+        <p class="rev-txt">"Mooi afgewerkt zinkwerk en goede communicatie van begin tot eind. Aanrader!"</p>
+        <div class="rev-auth"><div class="rev-av">MP</div><div><div class="rev-name">M. Peeters</div><div class="rev-city">Brussel</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTACT -->
+<div class="cnt-bg" id="contact">
+  <div class="sec">
+    <div class="cnt-grid">
+      <div>
+        <div class="sec-eye" data-k="contact_eyebrow">CONTACT</div>
+        <h2 class="sec-ttl" data-k="contact_title">Vraag uw gratis offerte aan</h2>
+        <p class="sec-sub" data-k="contact_sub">Vertel ons over uw project. We nemen snel contact met u op — bel, mail of WhatsApp.</p>
+        <div class="cnt-items">
+          <div class="cnt-item"><div class="cnt-ico red">📞</div><div><div class="cnt-lbl" data-k="contact_call">BEL ONS</div><a href="tel:+32489275172" class="cnt-val">0489 27 51 72</a></div></div>
+          <div class="cnt-item"><div class="cnt-ico green">💬</div><div><div class="cnt-lbl" data-k="contact_whatsapp">WHATSAPP</div><a href="https://wa.me/32489275172" class="cnt-val">0489 27 51 72</a></div></div>
+          <div class="cnt-item"><div class="cnt-ico grey">✉️</div><div><div class="cnt-lbl" data-k="contact_mail">MAIL ONS</div><a href="mailto:nicosbuiltsolutions@gmail.com" class="cnt-val">nicosbuiltsolutions@gmail.com</a></div></div>
+          <div class="cnt-item"><div class="cnt-ico grey">📍</div><div><div class="cnt-lbl" data-k="contact_address">ADRES</div><span class="cnt-val">Geraardsbergsesteenweg 86, 9320 Erembodegem</span></div></div>
+          <div class="cnt-item"><div class="cnt-ico grey">🕐</div><div><div class="cnt-lbl" data-k="contact_hours">BEREIKBAARHEID</div><span class="cnt-val" data-k="contact_hours_val">Op afspraak — bel of WhatsApp</span></div></div>
+        </div>
+      </div>
+      <div class="form-card">
+        <form id="cForm" onsubmit="sendForm(event)">
+          <div class="form-row">
+            <div class="fg"><label data-k="form_name">NAAM</label><input type="text" name="naam" placeholder="Uw naam" required></div>
+            <div class="fg"><label data-k="form_phone">TELEFOON</label><input type="tel" name="tel" placeholder="0489 ..."></div>
+          </div>
+          <div class="fg"><label data-k="form_email">E-MAIL</label><input type="email" name="email" placeholder="uw@email.com" required></div>
+          <div class="fg"><label data-k="form_message">UW BERICHT / PROJECT</label><textarea name="bericht" placeholder="Beschrijf uw project..."></textarea></div>
+          <button type="submit" class="form-btn" data-k="form_submit">Verstuur aanvraag</button>
+          <div class="form-ok" id="formOk">✓ Bedankt! We nemen snel contact op.</div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAP -->
+<div class="map-wrap">
+  <div class="map-inner"><div id="map"></div></div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="ft-grid">
+    <div class="ft-brand">
+      <svg width="40" height="40" viewBox="0 0 60 60" fill="none">
+        <path d="M5 54L30 5L55 54" stroke="#555" stroke-width="5.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+        <path d="M13 54L30 19L47 54" stroke="#777" stroke-width="5" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+        <path d="M22 54L30 35L38 54Z" fill="#CC0000"/>
+      </svg>
+      <div style="color:#fff;font-weight:700;margin-top:10px;font-size:15px;">Nico's Built Solutions</div>
+      <p class="tagline" data-k="footer_tagline">Dakwerken met vakmanschap in Brussel & Oost-Vlaanderen.</p>
+      <div class="btw" data-k="footer_btw">BTW: BE0803897594</div>
+    </div>
+    <div class="ft-col">
+      <h4 data-k="footer_nav">NAVIGATIE</h4>
+      <ul>
+        <li><a href="#diensten" data-k="nav_diensten">Diensten</a></li>
+        <li><a href="#realisaties" data-k="nav_realisaties">Realisaties</a></li>
+        <li><a href="#reviews" data-k="nav_reviews">Reviews</a></li>
+        <li><a href="#over-ons" data-k="nav_overons">Over ons</a></li>
+        <li><a href="#contact" data-k="nav_contact">Contact</a></li>
+      </ul>
+    </div>
+    <div class="ft-col">
+      <h4 data-k="footer_services">DIENSTEN</h4>
+      <ul>
+        <li><a href="#diensten" data-k="s1_title">Nieuwbouw</a></li>
+        <li><a href="#diensten" data-k="s2_title">Renovatie</a></li>
+        <li><a href="#diensten" data-k="s3_title">Reparatie</a></li>
+        <li><a href="#diensten" data-k="s4_title">Noodinterventie</a></li>
+        <li><a href="#diensten" data-k="s5_title">Zinkwerk</a></li>
+        <li><a href="#diensten" data-k="s6_title">Isolatie</a></li>
+      </ul>
+    </div>
+    <div class="ft-col">
+      <h4 data-k="footer_contact_title">CONTACT</h4>
+      <div class="ft-cv">
+        <a href="tel:+32489275172">0489 27 51 72</a><br>
+        <a href="mailto:nicosbuiltsolutions@gmail.com">nicosbuiltsolutions@gmail.com</a><br>
+        Geraardsbergsesteenweg 86<br>9320 Erembodegem
+      </div>
+      <div class="ft-langs">
+        <button class="ft-lb active" onclick="setLang('nl')">NL</button>
+        <button class="ft-lb" onclick="setLang('fr')">FR</button>
+        <button class="ft-lb" onclick="setLang('ro')">RO</button>
+      </div>
+    </div>
+  </div>
+  <div class="ft-bot">
+    <p>© 2025 Nico's Built Solutions. Alle rechten voorbehouden.</p>
+    <p>Website by <a href="https://melias.digital">Melias Digital</a></p>
+  </div>
+</footer>
+
+<!-- WHATSAPP FAB -->
+<a href="https://wa.me/32489275172" class="wa-fab" target="_blank" rel="noopener">
+  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+  WhatsApp
+</a>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const T={
+nl:{nav_diensten:'Diensten',nav_realisaties:'Realisaties',nav_reviews:'Reviews',nav_overons:'Over ons',nav_contact:'Contact',nav_cta:'Vraag een gratis offerte aan',topbar_emergency:'24/7 NOODINTERVENTIE',hero_eyebrow:'DAKWERKEN IN BRUSSEL & OOST-VLAANDEREN',hero_title1:'Vakkundig dakwerk,',hero_title2:'afgewerkt tot in de puntjes',hero_sub:'Van nieuwbouw en renovatie tot zinkwerk, isolatie en noodherstellingen. Meer dan 10 jaar ervaring in Brussel en Oost-Vlaanderen.',hero_cta:'Vraag een gratis offerte aan',hero_check1:'10+ jaar ervaring',hero_check2:'24/7 noodinterventie',hero_check3:'Gratis offerte',stats1_num:'10+',stats1_label:'JAAR ERVARING',stats2_num:'24/7',stats2_label:'NOODINTERVENTIE',stats3_num:'100%',stats3_label:'EIGEN VAKMENSEN',stats4_num:'Gratis',stats4_label:'VRIJBLIJVENDE OFFERTE',services_eyebrow:'ONZE DIENSTEN',services_title:'Alles voor uw dak, onder één dak',services_sub:'Van eerste steen tot laatste pan — wij verzorgen elk type dakwerk met oog voor detail en duurzaamheid.',s1_title:'Nieuwbouw',s1_desc:'Volledige dakopbouw voor nieuwbouwprojecten, op maat en volgens de strengste normen.',s2_title:'Renovatie',s2_desc:'Een tweede leven voor uw dak met moderne materialen en technieken.',s3_title:'Reparatie',s3_desc:'Snelle en duurzame herstelling van lekken, schade en slijtage.',s4_title:'Noodinterventie',s4_desc:'24/7 bereikbaar bij storm- of waterschade. Wij staan paraat.',s5_title:'Zinkwerk',s5_desc:'Vakkundig zink- en koperwerk voor goten, dakranden en afvoer.',s6_title:'Isolatie',s6_desc:'Energiezuinige dakisolatie voor meer comfort en lagere facturen.',why_eyebrow:'WAAROM NBS',why_title:"Waarom kiezen voor Nico's Built Solutions?",why_sub:'Een betrouwbare partner voor uw dak, van advies tot afwerking.',why1_title:'10+ jaar ervaring',why1_desc:'Meer dan een decennium vakmanschap op daken in Brussel en Oost-Vlaanderen.',why2_title:'Kwaliteitsmaterialen',why2_desc:'Wij werken uitsluitend met duurzame materialen van topmerken, voor een dak dat blijft.',why3_title:'Snelle noodinterventie',why3_desc:'Storm- of waterschade? Wij staan 24/7 paraat en zijn snel ter plaatse.',about_eyebrow:'OVER NBS',about_title:'Gebouwd op ervaring, gedreven door vakmanschap',about_p1:"NBS – Nico's Built Solutions is een dakwerkbedrijf actief in Brussel en Oost-Vlaanderen. Met meer dan 10 jaar ervaring kennen we elk dak en elke uitdaging.",about_p2:'Wij geloven in eerlijk advies, kwaliteitsmaterialen en een nette afwerking. Geen onderaanneming, maar een vast team van vakmensen dat trots is op elk project.',about_check1:'Persoonlijke aanpak',about_check2:'Nette werf & afwerking',about_check3:'Kwaliteitsmaterialen',about_check4:'Heldere communicatie',about_btn:'Plan uw project',about_badge:'JAAR ERVARING',projects_eyebrow:'REALISATIES',projects_title:'Onze recente projecten',projects_sub:'Een greep uit ons werk in Brussel en Oost-Vlaanderen.',reviews_eyebrow:'REVIEWS',reviews_title:'Wat onze klanten zeggen',reviews_sub:'Tevreden klanten in Brussel en Oost-Vlaanderen.',contact_eyebrow:'CONTACT',contact_title:'Vraag uw gratis offerte aan',contact_sub:'Vertel ons over uw project. We nemen snel contact met u op — bel, mail of WhatsApp.',contact_call:'BEL ONS',contact_whatsapp:'WHATSAPP',contact_mail:'MAIL ONS',contact_address:'ADRES',contact_hours:'BEREIKBAARHEID',contact_hours_val:'Op afspraak — bel of WhatsApp',form_name:'NAAM',form_phone:'TELEFOON',form_email:'E-MAIL',form_message:'UW BERICHT / PROJECT',form_submit:'Verstuur aanvraag',footer_tagline:'Dakwerken met vakmanschap in Brussel & Oost-Vlaanderen.',footer_nav:'NAVIGATIE',footer_services:'DIENSTEN',footer_contact_title:'CONTACT',footer_btw:'BTW: BE0803897594',cookie_text:'Wij gebruiken cookies om uw ervaring te verbeteren.',cookie_accept:'Accepteren',cookie_decline:'Weigeren'},
+fr:{nav_diensten:'Services',nav_realisaties:'Réalisations',nav_reviews:'Avis',nav_overons:'À propos',nav_contact:'Contact',nav_cta:'Demandez un devis gratuit',topbar_emergency:"INTERVENTION D'URGENCE 24/7",hero_eyebrow:'TOITURE À BRUXELLES & FLANDRE-ORIENTALE',hero_title1:'Travaux de toiture professionnels,',hero_title2:'finis à la perfection',hero_sub:"Des nouvelles constructions aux rénovations, en passant par la zinguerie, l'isolation et les dépannages. Plus de 10 ans d'expérience à Bruxelles et en Flandre-Orientale.",hero_cta:'Demandez un devis gratuit',hero_check1:"10+ ans d'expérience",hero_check2:'Intervention 24/7',hero_check3:'Devis gratuit',stats1_num:'10+',stats1_label:"ANS D'EXPÉRIENCE",stats2_num:'24/7',stats2_label:'INTERVENTION URGENCE',stats3_num:'100%',stats3_label:'PROPRE ÉQUIPE',stats4_num:'Gratuit',stats4_label:'DEVIS SANS ENGAGEMENT',services_eyebrow:'NOS SERVICES',services_title:'Tout pour votre toit, sous un même toit',services_sub:"De la première pierre à la dernière tuile — nous prenons en charge chaque type de travaux de toiture.",s1_title:'Construction neuve',s1_desc:'Construction complète de toiture pour projets neufs, sur mesure et selon les normes les plus strictes.',s2_title:'Rénovation',s2_desc:'Une seconde vie pour votre toit avec des matériaux et techniques modernes.',s3_title:'Réparation',s3_desc:'Réparation rapide et durable des fuites, dommages et usures.',s4_title:'Intervention urgente',s4_desc:"Disponible 24/7 en cas de dégâts des eaux ou tempête. Nous sommes prêts.",s5_title:'Zinguerie',s5_desc:'Travaux de zinc et cuivre pour gouttières, rives et évacuations.',s6_title:'Isolation',s6_desc:'Isolation de toiture écoénergétique pour plus de confort et des factures réduites.',why_eyebrow:'POURQUOI NBS',why_title:"Pourquoi choisir Nico's Built Solutions ?",why_sub:'Un partenaire de confiance pour votre toit, du conseil à la finition.',why1_title:"10+ ans d'expérience",why1_desc:"Plus d'une décennie de savoir-faire sur les toits de Bruxelles et Flandre-Orientale.",why2_title:'Matériaux de qualité',why2_desc:'Nous travaillons exclusivement avec des matériaux durables de grandes marques.',why3_title:'Intervention rapide',why3_desc:"Dégâts d'eau ou tempête ? Disponibles 24/7 et rapides sur place.",about_eyebrow:'À PROPOS DE NBS',about_title:"Construit sur l'expérience, guidé par le savoir-faire",about_p1:"NBS – Nico's Built Solutions est une entreprise de toiture active à Bruxelles et en Flandre-Orientale. Avec plus de 10 ans d'expérience, nous connaissons chaque toit.",about_p2:'Nous croyons en des conseils honnêtes, des matériaux de qualité et une finition soignée. Pas de sous-traitance, mais une équipe fixe de professionnels.',about_check1:'Approche personnelle',about_check2:'Chantier propre & finition soignée',about_check3:'Matériaux de qualité',about_check4:'Communication claire',about_btn:'Planifier votre projet',about_badge:"ANS D'EXPÉRIENCE",projects_eyebrow:'RÉALISATIONS',projects_title:'Nos projets récents',projects_sub:'Un aperçu de notre travail à Bruxelles et en Flandre-Orientale.',reviews_eyebrow:'AVIS',reviews_title:'Ce que disent nos clients',reviews_sub:'Des clients satisfaits à Bruxelles et en Flandre-Orientale.',contact_eyebrow:'CONTACT',contact_title:'Demandez votre devis gratuit',contact_sub:'Parlez-nous de votre projet. Nous vous contactons rapidement par téléphone, email ou WhatsApp.',contact_call:'APPELEZ-NOUS',contact_whatsapp:'WHATSAPP',contact_mail:'ENVOYEZ UN MAIL',contact_address:'ADRESSE',contact_hours:'DISPONIBILITÉ',contact_hours_val:'Sur rendez-vous — appelez ou WhatsApp',form_name:'NOM',form_phone:'TÉLÉPHONE',form_email:'E-MAIL',form_message:'VOTRE MESSAGE / PROJET',form_submit:'Envoyer la demande',footer_tagline:'Travaux de toiture avec savoir-faire à Bruxelles & Flandre-Orientale.',footer_nav:'NAVIGATION',footer_services:'SERVICES',footer_contact_title:'CONTACT',footer_btw:'TVA: BE0803897594',cookie_text:'Nous utilisons des cookies pour améliorer votre expérience.',cookie_accept:'Accepter',cookie_decline:'Refuser'},
+ro:{nav_diensten:'Servicii',nav_realisaties:'Realizări',nav_reviews:'Recenzii',nav_overons:'Despre noi',nav_contact:'Contact',nav_cta:'Cereți o ofertă gratuită',topbar_emergency:'INTERVENȚIE URGENTĂ 24/7',hero_eyebrow:'ACOPERIȘURI ÎN BRUXELLES & OOST-VLAANDEREN',hero_title1:'Lucrări de acoperiș profesionale,',hero_title2:'finisate impecabil',hero_sub:'De la construcții noi și renovări la lucrări de zinc, izolație și reparații urgente. Peste 10 ani de experiență în Bruxelles și Oost-Vlaanderen.',hero_cta:'Cereți o ofertă gratuită',hero_check1:'Peste 10 ani experiență',hero_check2:'Intervenție 24/7',hero_check3:'Ofertă gratuită',stats1_num:'10+',stats1_label:'ANI EXPERIENȚĂ',stats2_num:'24/7',stats2_label:'INTERVENȚIE URGENTĂ',stats3_num:'100%',stats3_label:'ECHIPĂ PROPRIE',stats4_num:'Gratuit',stats4_label:'OFERTĂ FĂRĂ OBLIGAȚII',services_eyebrow:'SERVICIILE NOASTRE',services_title:'Tot pentru acoperișul dvs., sub un singur acoperiș',services_sub:'De la prima piatră la ultima țiglă — ne ocupăm de orice tip de lucrare cu atenție la detalii.',s1_title:'Construcție nouă',s1_desc:'Construcție completă de acoperiș pentru proiecte noi, la comandă și conform celor mai stricte norme.',s2_title:'Renovare',s2_desc:'O nouă viață pentru acoperișul dvs. cu materiale și tehnici moderne.',s3_title:'Reparații',s3_desc:'Reparații rapide și durabile ale scurgerilor, deteriorărilor și uzurii.',s4_title:'Intervenție urgentă',s4_desc:'Disponibili 24/7 în caz de furtună sau daune provocate de apă. Suntem pregătiți.',s5_title:'Lucrări de zinc',s5_desc:'Lucrări profesionale de zinc și cupru pentru jgheaburi, margini și scurgeri.',s6_title:'Izolație',s6_desc:'Izolație termică a acoperișului pentru mai mult confort și facturi mai mici.',why_eyebrow:'DE CE NBS',why_title:"De ce să alegeți Nico's Built Solutions?",why_sub:'Un partener de încredere pentru acoperișul dvs., de la consultanță la finisaj.',why1_title:'Peste 10 ani experiență',why1_desc:'Peste un deceniu de măiestrie pe acoperișurile din Bruxelles și Oost-Vlaanderen.',why2_title:'Materiale de calitate',why2_desc:'Lucrăm exclusiv cu materiale durabile de la mărci de top.',why3_title:'Intervenție rapidă',why3_desc:'Daune de apă sau furtună? Suntem disponibili 24/7 și intervenim rapid.',about_eyebrow:'DESPRE NBS',about_title:'Construit pe experiență, ghidat de măiestrie',about_p1:"NBS – Nico's Built Solutions este o companie de acoperișuri activă în Bruxelles și Oost-Vlaanderen. Cu peste 10 ani de experiență, cunoaștem fiecare acoperiș.",about_p2:'Credem în sfaturi oneste, materiale de calitate și finisaje îngrijite. Fără subcontractare, ci o echipă fixă de profesioniști mândri de fiecare proiect.',about_check1:'Abordare personală',about_check2:'Șantier curat & finisaj îngrijit',about_check3:'Materiale de calitate',about_check4:'Comunicare clară',about_btn:'Planificați proiectul',about_badge:'ANI EXPERIENȚĂ',projects_eyebrow:'REALIZĂRI',projects_title:'Proiectele noastre recente',projects_sub:'O selecție din lucrările noastre în Bruxelles și Oost-Vlaanderen.',reviews_eyebrow:'RECENZII',reviews_title:'Ce spun clienții noștri',reviews_sub:'Clienți mulțumiți în Bruxelles și Oost-Vlaanderen.',contact_eyebrow:'CONTACT',contact_title:'Cereți oferta dvs. gratuită',contact_sub:'Spuneți-ne despre proiectul dvs. Vă contactăm rapid prin telefon, email sau WhatsApp.',contact_call:'SUNAȚI-NE',contact_whatsapp:'WHATSAPP',contact_mail:'TRIMITEȚI EMAIL',contact_address:'ADRESĂ',contact_hours:'DISPONIBILITATE',contact_hours_val:'La programare — sunați sau WhatsApp',form_name:'NUME',form_phone:'TELEFON',form_email:'E-MAIL',form_message:'MESAJUL / PROIECTUL DVS.',form_submit:'Trimiteți cererea',footer_tagline:'Lucrări de acoperiș cu măiestrie în Bruxelles & Oost-Vlaanderen.',footer_nav:'NAVIGARE',footer_services:'SERVICII',footer_contact_title:'CONTACT',footer_btw:'TVA: BE0803897594',cookie_text:'Folosim cookie-uri pentru a îmbunătăți experiența dvs.',cookie_accept:'Accept',cookie_decline:'Refuz'}
+};
+
+let lang=localStorage.getItem('nbs_lang')||'nl';
+
+function setLang(l){
+  lang=l;
+  localStorage.setItem('nbs_lang',l);
+  document.documentElement.lang=l;
+  document.querySelectorAll('[data-k]').forEach(el=>{
+    const k=el.getAttribute('data-k');
+    if(T[l][k]!==undefined) el.textContent=T[l][k];
+  });
+  document.querySelectorAll('.lang-btn,.ft-lb').forEach(b=>b.classList.toggle('active',b.textContent===l.toUpperCase()));
+  const ph={nl:{naam:'Uw naam',tel:'0489 ...',email:'uw@email.com',bericht:'Beschrijf uw project...'},fr:{naam:'Votre nom',tel:'0489 ...',email:'votre@email.com',bericht:'Décrivez votre projet...'},ro:{naam:'Numele dvs.',tel:'0489 ...',email:'dvs@email.com',bericht:'Descrieți proiectul dvs...'}};
+  const f=document.getElementById('cForm');
+  if(f){f.querySelector('[name="naam"]').placeholder=ph[l].naam;f.querySelector('[name="tel"]').placeholder=ph[l].tel;f.querySelector('[name="email"]').placeholder=ph[l].email;f.querySelector('[name="bericht"]').placeholder=ph[l].bericht;}
+}
+
+function sendForm(e){
+  e.preventDefault();
+  const d=new FormData(e.target);
+  const body=`Naam: ${d.get('naam')}\nTelefoon: ${d.get('tel')}\nEmail: ${d.get('email')}\nBericht: ${d.get('bericht')}`;
+  window.location.href=`mailto:nicosbuiltsolutions@gmail.com?subject=Offerte aanvraag NBS Website&body=${encodeURIComponent(body)}`;
+  document.getElementById('formOk').style.display='block';
+  e.target.reset();
+}
+
+function okCookie(){localStorage.setItem('nbs_ck','ok');document.getElementById('cookieBanner').classList.add('gone')}
+function noCookie(){localStorage.setItem('nbs_ck','no');document.getElementById('cookieBanner').classList.add('gone')}
+if(localStorage.getItem('nbs_ck')) document.getElementById('cookieBanner').classList.add('gone');
+
+setLang(lang);
+
+// MAP
+window.addEventListener('load', function(){
+  if(typeof L === 'undefined') return;
+  const map=L.map('map').setView([50.9334,4.0411],15);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
+  const icon=L.divIcon({html:'<div style="background:#CC0000;color:#fff;padding:8px 14px;border-radius:4px;font-weight:700;font-size:12px;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.4);font-family:sans-serif;">📍 NBS Dakwerken</div>',className:'',iconAnchor:[70,20]});
+  L.marker([50.9334,4.0411],{icon}).addTo(map).bindPopup("<b>Nico's Built Solutions</b><br>Geraardsbergsesteenweg 86<br>9320 Erembodegem").openPopup();
+});
+</script>
+</body>
+</html>
