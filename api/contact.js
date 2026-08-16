@@ -14,7 +14,7 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: 'method_not_allowed' });
   }
 
-  const { naam, tel, email, bericht, website, consent } = req.body || {};
+  const { naam, tel, email, interesse, bericht, website, consent } = req.body || {};
 
   // Honeypot: real visitors never fill this hidden field. Bots that do get a
   // fake "success" so they don't retry.
@@ -22,7 +22,7 @@ module.exports = async (req, res) => {
     return res.status(200).json({ ok: true });
   }
 
-  if (!naam || !email || !bericht) {
+  if (!naam || !email || !bericht || !interesse) {
     return res.status(400).json({ error: 'missing_fields' });
   }
 
@@ -42,6 +42,8 @@ module.exports = async (req, res) => {
   const toEmail = process.env.CONTACT_TO_EMAIL || 'nicosbuiltsolutions@gmail.com';
   const fromEmail = process.env.CONTACT_FROM_EMAIL || 'NBS Website <onboarding@resend.dev>';
   const submittedAt = new Date().toISOString();
+  const isEmergency = interesse === 'Noodinterventie';
+  const subjectPrefix = isEmergency ? '🚨 NOODINTERVENTIE - ' : '';
 
   try {
     const resendRes = await fetch('https://api.resend.com/emails', {
@@ -54,11 +56,12 @@ module.exports = async (req, res) => {
         from: fromEmail,
         to: [toEmail],
         reply_to: email,
-        subject: `Nieuwe offerteaanvraag van ${naam}`,
+        subject: `${subjectPrefix}Nieuwe offerteaanvraag van ${naam}`,
         text: [
           `Naam: ${naam}`,
           `Telefoon: ${tel || '-'}`,
           `Email: ${email}`,
+          `Geïnteresseerd in: ${interesse || '-'}`,
           '',
           'Bericht:',
           bericht,
